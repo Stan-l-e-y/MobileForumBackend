@@ -5,9 +5,9 @@
   "description": "",
   "main": "build/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
-    "start": "nodemon build/server"
+    "dev:server": "nodemon build/server.js",
+    "dev:typescript": "tsc -w",
+    "start": "concurrently npm:dev:*"
   },
   "author": "",
   "license": "ISC",
