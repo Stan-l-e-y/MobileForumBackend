@@ -13,7 +13,7 @@ export const jwtMiddleware = (
     const { email } = validateAndDecodeJWT<DecodedJWT>(token);
     next();
   } catch (error: any) {
-    res.status(400).send(error.message);
-    return res.redirect('/login');
+    res.clearCookie('JWT').status(400).send(error.message).redirect('/login');
+    // return res.redirect('/login');
   }
 };
