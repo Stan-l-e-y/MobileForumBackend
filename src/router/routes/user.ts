@@ -1,10 +1,11 @@
 import { Router } from 'express';
 import { prisma } from '../../server.js';
 import bcyprt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 const userRouter = Router();
 
-//get user profile
+//get user profile, down the line maybe include the users posts and comments
 userRouter.get('/:email', async (req, res) => {
   const { email } = req.params;
   const user = await prisma.user.findUnique({
