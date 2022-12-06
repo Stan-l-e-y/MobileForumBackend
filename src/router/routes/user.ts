@@ -4,8 +4,19 @@ import bcyprt from 'bcrypt';
 
 const userRouter = Router();
 
-userRouter.get('/:username', (req, res) => {
-  res.send({ message: 'Hello user!' });
+//get user profile
+userRouter.get('/:email', async (req, res) => {
+  const { email } = req.params;
+  const user = await prisma.user.findUnique({
+    where: {
+      email,
+    },
+  });
+  if (!user) {
+    res.status(404).send('User not found');
+  } else {
+    res.status(200).json({ username: user.username });
+  }
 });
 
 userRouter.post('/login', async (req, res) => {
