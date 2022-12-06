@@ -10,17 +10,21 @@ const userRouter = Router();
 
 //get user profile, down the line maybe include the users posts and comments
 userRouter.get('/', async (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  const { email } = validateAndDecodeJWT<DecodedJWT>(token);
-  const user = await prisma.user.findUnique({
-    where: {
-      email,
-    },
-  });
-  if (!user) {
-    res.status(404).send('User not found');
-  } else {
-    res.status(200).json({ username: user.username });
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    const { email } = validateAndDecodeJWT<DecodedJWT>(token);
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      res.status(404).send('User not found');
+    } else {
+      res.status(200).json({ username: user.username });
+    }
+  } catch (error: any) {
+    res.status(400).send(error.message);
   }
 });
 
@@ -43,7 +47,13 @@ userRouter.post('/login', async (req, res) => {
         expiresIn: '1h',
         algorithm: 'HS256',
       });
-      res.send({ token });
+      res
+        .cookie('JWT', token, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'none',
+        })
+        .send(`Logged in as ${user.username} token: ${token}`);
     } else {
       res.status(400).send({ message: 'Wrong password' });
     }
