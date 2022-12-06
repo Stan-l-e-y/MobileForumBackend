@@ -1,13 +1,17 @@
 import { Router } from 'express';
 import { prisma } from '../../server.js';
 import bcyprt from 'bcrypt';
+import { JWT_SECRET } from '../../server.js';
 import jwt from 'jsonwebtoken';
+import { validateAndDecodeJWT } from '../../functions.js';
+import { DecodedJWT } from '../../types.js';
 
 const userRouter = Router();
 
 //get user profile, down the line maybe include the users posts and comments
-userRouter.get('/:email', async (req, res) => {
-  const { email } = req.params;
+userRouter.get('/', async (req, res) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  const { email } = validateAndDecodeJWT<DecodedJWT>(token);
   const user = await prisma.user.findUnique({
     where: {
       email,
@@ -35,7 +39,11 @@ userRouter.post('/login', async (req, res) => {
   } else {
     const passwordMatch = await bcyprt.compare(password, user.password);
     if (passwordMatch) {
-      res.send({ message: 'Logged in' });
+      const token = jwt.sign({ email }, JWT_SECRET!, {
+        expiresIn: '1h',
+        algorithm: 'HS256',
+      });
+      res.send({ token });
     } else {
       res.status(400).send({ message: 'Wrong password' });
     }
