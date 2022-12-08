@@ -7,8 +7,19 @@ import { jwtMiddleware } from '../middleware.js';
 const postRouter = Router();
 postRouter.use(jwtMiddleware);
 
-postRouter.get('/posts', (req, res) => {
-  res.send({ message: 'Hello get all post!' });
+//get posts for main page
+postRouter.get('/posts', async (req, res) => {
+  try {
+    const posts = await prisma.post.findMany({
+      take: 10,
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    res.send(posts);
+  } catch (error: any) {
+    res.status(400).send(error.message);
+  }
 });
 
 postRouter
@@ -27,7 +38,10 @@ postRouter.post('/create', async (req, res) => {
   try {
     const token = req.cookies.JWT;
     const { email } = validateAndDecodeJWT<DecodedJWT>(token);
-    //TODO: validate request body
+
+    if (!req.body.title || !req.body.content) {
+      res.status(400).send('Missing title or content');
+    }
 
     const user = await prisma.user.findUnique({
       where: {
