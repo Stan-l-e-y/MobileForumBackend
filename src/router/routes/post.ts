@@ -23,10 +23,36 @@ postRouter
     res.send({ message: 'Hello delete post!' });
   });
 
-postRouter.post('/create', (req, res) => {
-  const token = req.headers.authorization?.split(' ')[1];
-  const { email } = validateAndDecodeJWT<DecodedJWT>(token);
-  res.send({ message: 'Hello post post!' });
+postRouter.post('/create', async (req, res) => {
+  try {
+    const token = req.cookies.JWT;
+    const { email } = validateAndDecodeJWT<DecodedJWT>(token);
+    //TODO: validate request body
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      res.status(404).send('User not found');
+    } else {
+      const post = await prisma.post.create({
+        data: {
+          title: req.body.title,
+          content: req.body.content,
+          author: {
+            connect: {
+              email,
+            },
+          },
+        },
+      });
+      res.send(post);
+    }
+  } catch (error: any) {
+    res.status(400).send(error.message);
+  }
 });
 
 export default postRouter;

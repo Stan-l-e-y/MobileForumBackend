@@ -11,7 +11,7 @@ const userRouter = Router();
 //get user profile, down the line maybe include the users posts and comments
 userRouter.get('/', async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const token = req.cookies.JWT;
     const { email } = validateAndDecodeJWT<DecodedJWT>(token);
     const user = await prisma.user.findUnique({
       where: {
