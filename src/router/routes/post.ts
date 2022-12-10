@@ -34,6 +34,57 @@ postRouter
     res.send({ message: 'Hello delete post!' });
   });
 
+postRouter.route('/:id/comment').post(async (req, res) => {
+  const postId = req.params.id;
+  if (!postId) res.status(400).send('Missing post id');
+
+  const { comment } = req.body;
+  if (!comment) res.status(400).send('Missing comment');
+
+  try {
+    const token = req.cookies.JWT;
+    const { email } = validateAndDecodeJWT<DecodedJWT>(token);
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+    if (!user) {
+      res.status(404).send('User not found');
+    }
+
+    const post = await prisma.post.findUnique({
+      where: {
+        id: Number(postId),
+      },
+    });
+    if (!post) {
+      res.status(404).send('Post not found');
+    }
+
+    const newComment = await prisma.comment.create({
+      data: {
+        body: comment,
+        author: {
+          connect: {
+            email,
+          },
+        },
+        post: {
+          connect: {
+            id: Number(postId),
+          },
+        },
+      },
+    });
+  } catch (error: any) {
+    res.status(400).send(error.message);
+  }
+
+  res.send({ message: 'Hello post comment!' });
+});
+
 postRouter.post('/create', async (req, res) => {
   try {
     const token = req.cookies.JWT;
