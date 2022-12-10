@@ -78,11 +78,10 @@ postRouter.route('/:id/comment').post(async (req, res) => {
         },
       },
     });
+    res.send(newComment);
   } catch (error: any) {
     res.status(400).send(error.message);
   }
-
-  res.send({ message: 'Hello post comment!' });
 });
 
 postRouter.post('/create', async (req, res) => {
