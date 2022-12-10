@@ -25,6 +25,7 @@ postRouter.get('/posts', async (req, res) => {
 postRouter
   .route('/:id')
   .get((req, res) => {
+    //get a single post with its comments and subcomments
     res.send({ message: 'Hello get single post!' });
   })
   .put((req, res) => {
