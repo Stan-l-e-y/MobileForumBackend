@@ -24,9 +24,43 @@ postRouter.get('/posts', async (req, res) => {
 
 postRouter
   .route('/:id')
-  .get((req, res) => {
+  .get(async (req, res) => {
     //get a single post with its comments and subcomments
-    res.send({ message: 'Hello get single post!' });
+    const postId = req.params.id;
+    if (!postId) res.status(400).send('Missing post id');
+
+    try {
+      const token = req.cookies.JWT;
+      const { email } = validateAndDecodeJWT<DecodedJWT>(token);
+
+      const user = await prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+      if (!user) {
+        res.status(404).send('User not found');
+      }
+      const post = await prisma.post.findUnique({
+        where: {
+          id: Number(postId),
+        },
+        include: {
+          comments: {
+            include: {
+              subcomments: true,
+            },
+          },
+        },
+      });
+
+      if (!post) {
+        res.status(404).send('Post not found');
+      }
+      res.send(post);
+    } catch (error: any) {
+      res.status(400).send(error.message);
+    }
   })
   .put((req, res) => {
     res.send({ message: 'Hello put post!' });
