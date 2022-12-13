@@ -3,11 +3,18 @@ import { createServer } from 'http';
 import { router } from './router/router.js';
 import { PrismaClient } from '@prisma/client';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 export const prisma = new PrismaClient();
 export const JWT_SECRET = process.env.JWT_SECRET;
 
 const app = express();
+
+app.use(
+  cors({
+    origin: '*',
+  })
+);
 
 app.use(cookieParser());
 app.use('/api', router);
